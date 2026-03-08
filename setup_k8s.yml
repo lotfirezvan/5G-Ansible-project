@@ -1,0 +1,30 @@
+---
+- name: install MicroK8s    # the name of the automation play
+  hosts: my_5g_nodes   # my Linux VM from inventory
+  become: yes    # run with sudo or admin privileges
+
+  tasks:
+    - name: Install MicroK8s via snap   # task description --> download and install K8s
+      snap:                             # using the 'snap' package manager
+        name: microk8s                  # package name
+        classic: yes                    # required for net permissions
+        channel: 1.30/stable
+
+    - name: Wait for MicroK8s to be ready   # ensure K8s is fully booted 
+      command: microk8s status --wait-ready 
+      changed_when: false
+
+    - name: Add user to microk8s group      # give "rezvan" admin rights
+      user:
+        name: rezvan
+        groups: microk8s
+        append: yes
+
+    - name: Enable essential 5G add-ons     # turn on DNS and disk storage
+      command: "microk8s enable dns hostpath-storage"
+      changed_when: true
+
+    - name: Create kubectl alias            # shortcut for K8s commands
+      lineinfile:
+        path: "/home/rezvan/.bashrc"
+        line: "alias kubectl='microk8s kubectl'"

@@ -1,0 +1,17 @@
+---
+- name: Install 5G deployment tools         # Title: preparing for OAI 5G core
+  hosts: my_5g_nodes                        # my Ubuntu VM
+  become: yes                               # access, using sudo for installations
+
+  tasks:
+    - name: enable Helm in MicroK8s         # Task 1: Helm is the "App Store" for K8s
+      command: microk8s enable helm         # OAI uses Helm to install 5G components
+      changed_when: true
+
+    - name: enable community Add-ons        # Task 2: access advanced 5G tools
+      command: microk8s enable community    # required to get the 'Multus' network tool
+      changed_when: true
+
+    - name: install multus networking       # Task 3: 5G needs multiple network interfaces
+      command: microk8s enable multus      # multus allows a container to have many 'cables'
+      changed_when: true
