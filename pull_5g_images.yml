@@ -5,22 +5,22 @@
   become: yes                           # Requirement: sudo privileges for Docker commands
 
   tasks:
-    # Task 1: Downloading the Access and Mobility Management Function (AMF)
+    # Downloading the Access and Mobility Management Function (AMF)
     - name: Pull 5G Core - AMF
       command: docker pull oaisoftwarealliance/oai-amf:v2.0.0
       changed_when: true                # Forces Ansible to report 'changed' in the recap
 
-    # Task 2: Downloading the Session Management Function (SMF)
+    # Downloading the Session Management Function (SMF)
     - name: Pull 5G Core - SMF
       command: docker pull oaisoftwarealliance/oai-smf:v2.0.0
       changed_when: true
 
-    # Task 3: Downloading the User Plane Function (UPF) - The data traffic highway
+    # Downloading the User Plane Function (UPF) - The data traffic highway
     - name: Pull 5G Core - UPF
       command: docker pull oaisoftwarealliance/oai-upf:v2.0.0
       changed_when: true
 
-    # Task 4: Downloading subscriber and security functions using a loop for efficiency
+    # Downloading subscriber and security functions using a loop for efficiency
     - name: Pull 5G Database - UDR/UDM/AUSF
       command: "docker pull oaisoftwarealliance/{{ item }}:v2.0.0"
       loop:
