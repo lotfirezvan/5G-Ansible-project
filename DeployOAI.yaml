@@ -3,7 +3,7 @@
 - name: Deploy OAI
   hosts: localhost
   connection: local
-  become: yes
+  
 
   tasks:
             #Install Docker Engine and Compose
@@ -61,7 +61,7 @@
         - docker-ce-cli
         - containerd.io
         - docker-buildx-plugin
-        - docker-compose-plugin
+       # - docker-compose-plugin
       state: present
     become: yes
 
@@ -118,15 +118,15 @@
         eval "$(pyenv init -)"
       marker: "# {mark} ANSIBLE MANAGED BLOCK: pyenv"
 
-  - name: Install Python 3.6.9 via pyenv
+  - name: Install Python 3.9.18 via pyenv
     ansible.builtin.shell:
-      cmd: "{{ ansible_env.HOME }}/.pyenv/bin/pyenv install 3.6.9"
-      creates: "{{ ansible_env.HOME }}/.pyenv/versions/3.6.9"
+      cmd: "{{ ansible_env.HOME }}/.pyenv/bin/pyenv install 3.9.18"
+      creates: "{{ ansible_env.HOME }}/.pyenv/versions/3.9.18"
     become: no
 
-  - name: Set Python 3.6.9 as the global pyenv version
+  - name: Set Python 3.9.18 as the global pyenv version
     ansible.builtin.shell:
-      cmd: "{{ ansible_env.HOME }}/.pyenv/bin/pyenv global 3.6.9"
+      cmd: "{{ ansible_env.HOME }}/.pyenv/bin/pyenv global 3.9.18"
     become: no
 
   - name: Verify pyenv Python 3 version specifically
@@ -162,98 +162,95 @@
 
   - name: Set default iptables FORWARD policy to ACCEPT
     ansible.builtin.command: iptables -P FORWARD ACCEPT
-  become: yes
+    become: yes
 
-      #Pull container images
-- name: Pull OAI 5G Core and RAN images
-  community.docker.docker_image:
-    name: "{{ item.name }}"
-    tag: "{{ item.tag }}"
-    source: pull
-  loop:
-    # 5G Core Network Functions (v2.2.0)
-    - { name: 'oaisoftwarealliance/oai-amf', tag: 'v2.2.0' }
-    - { name: 'oaisoftwarealliance/oai-nrf', tag: 'v2.2.0' }
-    - { name: 'oaisoftwarealliance/oai-upf', tag: 'v2.2.0' }
-    - { name: 'oaisoftwarealliance/oai-smf', tag: 'v2.2.0' }
-    # Traffic Generator and RAN components
-    - { name: 'oaisoftwarealliance/trf-gen-cn5g', tag: 'focal' }
-    - { name: 'oaisoftwarealliance/oai-gnb', tag: 'v2.2.0' }
-    - { name: 'oaisoftwarealliance/oai-nr-ue', tag: 'v2.2.0' }
-  become: yes
+        #Pull container images
+  - name: Pull OAI 5G Core and RAN images
+    community.docker.docker_image:
+      name: "{{ item.name }}"
+      tag: "{{ item.tag }}"
+      source: pull
+    loop:
+      # 5G Core Network Functions (v2.2.0)
+      - { name: 'oaisoftwarealliance/oai-amf', tag: 'v2.2.0' }
+      - { name: 'oaisoftwarealliance/oai-nrf', tag: 'v2.2.0' }
+      - { name: 'oaisoftwarealliance/oai-upf', tag: 'v2.2.0' }
+      - { name: 'oaisoftwarealliance/oai-smf', tag: 'v2.2.0' }
+      # Traffic Generator and RAN components
+      - { name: 'oaisoftwarealliance/trf-gen-cn5g', tag: 'focal' }
+      - { name: 'oaisoftwarealliance/oai-gnb', tag: 'v2.2.0' }
+      - { name: 'oaisoftwarealliance/oai-nr-ue', tag: 'v2.2.0' }
+    become: yes
 
-- name: Clone and checkout OAI Federation Repository (v2.2.0)
-  ansible.builtin.git:
-    repo: https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
-    dest: "{{ ansible_env.HOME }}/oai-cn5g-fed"
-    version: v2.2.0
-    force: yes
-  become: no
+  - name: Clone and checkout OAI Federation Repository (v2.2.0)
+    ansible.builtin.git:
+      repo: https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
+      dest: "{{ ansible_env.HOME }}/oai-cn5g-fed"
+      version: v2.2.0
+      force: yes
+    become: no
 
-- name: Sync OAI Components (Submodules)
-  ansible.builtin.shell:
-    cmd: ./scripts/syncComponents.sh
-    chdir: "{{ ansible_env.HOME }}/oai-cn5g-fed"
-  become: no
-  register: sync_output
-  changed_when: "'Successfully synchronized' in sync_output.stdout"
+  - name: Sync OAI Components (Submodules)
+    ansible.builtin.shell:
+      cmd: ./scripts/syncComponents.sh
+      chdir: "{{ ansible_env.HOME }}/oai-cn5g-fed"
+    become: no
+    register: sync_output
+    changed_when: "'Successfully synchronized' in sync_output.stdout"
         
         #Deploy SA5G MINI with GNBSIM
-- name: Create and set permissions for OAI gNB simulator directory
-  ansible.builtin.file:
-    path: /tmp/oai/mini-gnbsim
-    state: directory
-    mode: '0777'
-    recurse: yes
-  become: yes
+  - name: Create and set permissions for OAI gNB simulator directory
+    ansible.builtin.file:
+      path: /tmp/oai/mini-gnbsim
+      state: directory
+      mode: '0777'
+      recurse: yes
+    become: yes
 
-- name: Launch OAI 5G Minimalist Core (Scenario 2)
-  ansible.builtin.shell:
-    cmd: python3 ./core-network.py --type start-mini --scenario 2
-    chdir: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
-  become: yes
-  register: oai_start_output
-  changed_when: "'Starting 5G Core' in oai_start_output.stdout"
+  - name: Launch OAI 5G Minimalist Core (Scenario 2)
+    ansible.builtin.shell:
+      cmd: python3 ./core-network.py --type start-mini --scenario 2
+      chdir: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
+    become: yes
+    register: oai_start_output
+    changed_when: "'Starting 5G Core' in oai_start_output.stdout"
+    #gnbsim docker image
+  - name: Pull the gNB Simulator image
+    community.docker.docker_image:
+      name: rohankharade/gnbsim
+      tag: latest
+      source: pull
+    become: yes
 
-#gnbsim docker image
-- name: Pull the gNB Simulator image
-  community.docker.docker_image:
-    name: rohankharade/gnbsim
-    tag: latest
-    source: pull
-  become: yes
+  - name: Tag the image exactly as gnbsim:latest
+    community.docker.docker_image:
+      name: rohankharade/gnbsim:latest
+      repository: gnbsim  # This is the "new" image name
+      tag: latest         # This is the "new" tag
+      source: local
+    become: yes
 
-- name: Tag the image exactly as gnbsim:latest
-  community.docker.docker_image:
-    name: rohankharade/gnbsim:latest
-    repository: gnbsim  # This is the "new" image name
-    tag: latest         # This is the "new" tag
-    source: local
-  become: yes
-
-- name: Launch the gNB Simulator in detached mode
-  community.docker.docker_compose_v2:
-    project_src: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
-    files:
-      - docker-compose-gnbsim.yaml
-    services:
-      - gnbsim
-    state: present
-    wait: yes
-  become: yes
-
+  - name: Launch the gNB Simulator in detached mode
+    community.docker.docker_compose_v2:
+      project_src: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
+      files:
+        - docker-compose-gnbsim.yaml
+      services:
+        - gnbsim
+      state: present
+      wait: yes
+    become: yes
 #Display if gnbsim is healthy
-- name: Gather facts about gnbsim services
-  community.docker.docker_compose_v2_info:
-    project_src: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
-    files:
-      - docker-compose-gnbsim.yaml
-  register: gnbsim_info
-  become: yes
-
-- name: Display status of the gNB simulator
-  ansible.builtin.debug:
-    msg: "Service {{ item.service }} is currently {{ item.state }}"
-  loop: "{{ gnbsim_info.containers }}"
-  when: item.service == 'gnbsim'
+#  - name: Gather facts about gnbsim services
+#   community.docker.docker_compose_v2_info:
+#     project_src: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
+#     files:
+#       - docker-compose-gnbsim.yaml
+#   register: gnbsim_info
+#   become: yes
+# - name: Display status of the gNB simulator
+#  ansible.builtin.debug:
+#     msg: "Service {{ item.service }} is currently {{ item.state }}"
+#   loop: "{{ gnbsim_info.containers }}"
+#   when: item.service == 'gnbsim'
 
