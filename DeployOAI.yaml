@@ -1,0 +1,259 @@
+# ansible-playbook -i "localhost," -c local your_playbook.yml
+
+- name: Deploy OAI
+  hosts: localhost
+  connection: local
+  become: yes
+
+  tasks:
+            #Install Docker Engine and Compose
+  - name: Update and Upgrade apt cache
+    ansible.builtin.apt:
+      update_cache: yes
+      cache_valid_time: 3600
+      upgrade: safe
+    become: yes
+
+  - name: Install ca-certificates and curl
+    ansible.builtin.apt:
+      name:
+        - ca-certificates
+        - curl
+        - gnupg
+      state: present
+    become: yes
+    
+  - name: Create directory for APT keyrings with specific permissions
+    ansible.builtin.file:
+      path: /etc/apt/keyrings
+      state: directory
+      mode: '0755'
+    become: yes
+
+  - name: Download Docker GPG key
+    ansible.builtin.get_url:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      dest: /etc/apt/keyrings/docker.asc
+      mode: '0644'
+    become: yes
+
+  - name: Add Docker repository to Apt sources
+    ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/docker.sources
+      content: |
+        Types: deb
+        URIs: https://download.docker.com/linux/ubuntu
+        Suites: {{ ansible_distribution_release }}
+        Components: stable
+        Signed-By: /etc/apt/keyrings/docker.asc
+      mode: '0644'
+    become: yes
+
+  - name: Update apt cache to recognize the new Docker repo
+    ansible.builtin.apt:
+      update_cache: yes
+    become: yes
+
+  - name: Install Docker Engine and Compose
+    ansible.builtin.apt:
+      name:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+      state: present
+    become: yes
+
+  - name: Restart Docker service
+    ansible.builtin.systemd:
+      name: docker
+      state: restarted
+      enabled: yes
+    become: yes
+
+  - name: Add user to the docker group
+    ansible.builtin.user:
+      name: "atakt073@uottawa.ca"
+      groups: docker
+      append: yes
+    become: yes
+              #Install Python
+  - name: Install build dependencies and development libraries
+    ansible.builtin.apt:
+      name:
+        - make
+        - build-essential
+        - libssl-dev
+        - zlib1g-dev
+        - libbz2-dev
+        - libreadline-dev
+        - libsqlite3-dev
+        - wget
+        - curl
+        - llvm
+        - libncursesw5-dev
+        - xz-utils
+        - tk-dev
+        - libxml2-dev
+        - libxmlsec1-dev
+        - libffi-dev
+        - liblzma-dev
+      state: present
+    become: yes
+
+  - name: Install pyenv from GitHub
+    ansible.builtin.git:
+      repo: https://github.com/pyenv/pyenv.git
+      dest: "{{ ansible_env.HOME }}/.pyenv"
+      version: master
+    become: no  # pyenv should be installed as your user, NOT root
+
+  - name: Add pyenv to .bashrc for shell initialization
+    ansible.builtin.blockinfile:
+      path: "{{ ansible_env.HOME }}/.bashrc"
+      block: |
+        export PYENV_ROOT="$HOME/.pyenv"
+        [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+        eval "$(pyenv init -)"
+      marker: "# {mark} ANSIBLE MANAGED BLOCK: pyenv"
+
+  - name: Install Python 3.6.9 via pyenv
+    ansible.builtin.shell:
+      cmd: "{{ ansible_env.HOME }}/.pyenv/bin/pyenv install 3.6.9"
+      creates: "{{ ansible_env.HOME }}/.pyenv/versions/3.6.9"
+    become: no
+
+  - name: Set Python 3.6.9 as the global pyenv version
+    ansible.builtin.shell:
+      cmd: "{{ ansible_env.HOME }}/.pyenv/bin/pyenv global 3.6.9"
+    become: no
+
+  - name: Verify pyenv Python 3 version specifically
+    ansible.builtin.shell:
+      cmd: "{{ ansible_env.HOME }}/.pyenv/shims/python3 --version"
+    register: pyenv_version
+    become: no
+
+  - name: Show pyenv version
+    ansible.builtin.debug:
+      var: pyenv_version.stdout
+
+        #Pull base images
+  - name: Pull required Docker images for 5G project
+    community.docker.docker_image:
+      name: "{{ item.name }}"
+      tag: "{{ item.tag }}"
+      source: pull
+    loop:
+      - { name: 'ubuntu', tag: 'jammy' }
+      - { name: 'mysql', tag: '8.0' }
+    become: yes
+
+      #Network configuration
+  - name: Enable IPv4 forwarding in the kernel
+    ansible.posix.sysctl:
+      name: net.ipv4.conf.all.forwarding
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+    become: yes
+
+  - name: Set default iptables FORWARD policy to ACCEPT
+    ansible.builtin.command: iptables -P FORWARD ACCEPT
+  become: yes
+
+      #Pull container images
+- name: Pull OAI 5G Core and RAN images
+  community.docker.docker_image:
+    name: "{{ item.name }}"
+    tag: "{{ item.tag }}"
+    source: pull
+  loop:
+    # 5G Core Network Functions (v2.2.0)
+    - { name: 'oaisoftwarealliance/oai-amf', tag: 'v2.2.0' }
+    - { name: 'oaisoftwarealliance/oai-nrf', tag: 'v2.2.0' }
+    - { name: 'oaisoftwarealliance/oai-upf', tag: 'v2.2.0' }
+    - { name: 'oaisoftwarealliance/oai-smf', tag: 'v2.2.0' }
+    # Traffic Generator and RAN components
+    - { name: 'oaisoftwarealliance/trf-gen-cn5g', tag: 'focal' }
+    - { name: 'oaisoftwarealliance/oai-gnb', tag: 'v2.2.0' }
+    - { name: 'oaisoftwarealliance/oai-nr-ue', tag: 'v2.2.0' }
+  become: yes
+
+- name: Clone and checkout OAI Federation Repository (v2.2.0)
+  ansible.builtin.git:
+    repo: https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
+    dest: "{{ ansible_env.HOME }}/oai-cn5g-fed"
+    version: v2.2.0
+    force: yes
+  become: no
+
+- name: Sync OAI Components (Submodules)
+  ansible.builtin.shell:
+    cmd: ./scripts/syncComponents.sh
+    chdir: "{{ ansible_env.HOME }}/oai-cn5g-fed"
+  become: no
+  register: sync_output
+  changed_when: "'Successfully synchronized' in sync_output.stdout"
+        
+        #Deploy SA5G MINI with GNBSIM
+- name: Create and set permissions for OAI gNB simulator directory
+  ansible.builtin.file:
+    path: /tmp/oai/mini-gnbsim
+    state: directory
+    mode: '0777'
+    recurse: yes
+  become: yes
+
+- name: Launch OAI 5G Minimalist Core (Scenario 2)
+  ansible.builtin.shell:
+    cmd: python3 ./core-network.py --type start-mini --scenario 2
+    chdir: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
+  become: yes
+  register: oai_start_output
+  changed_when: "'Starting 5G Core' in oai_start_output.stdout"
+
+#gnbsim docker image
+- name: Pull the gNB Simulator image
+  community.docker.docker_image:
+    name: rohankharade/gnbsim
+    tag: latest
+    source: pull
+  become: yes
+
+- name: Tag the image exactly as gnbsim:latest
+  community.docker.docker_image:
+    name: rohankharade/gnbsim:latest
+    repository: gnbsim  # This is the "new" image name
+    tag: latest         # This is the "new" tag
+    source: local
+  become: yes
+
+- name: Launch the gNB Simulator in detached mode
+  community.docker.docker_compose_v2:
+    project_src: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
+    files:
+      - docker-compose-gnbsim.yaml
+    services:
+      - gnbsim
+    state: present
+    wait: yes
+  become: yes
+
+#Display if gnbsim is healthy
+- name: Gather facts about gnbsim services
+  community.docker.docker_compose_v2_info:
+    project_src: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
+    files:
+      - docker-compose-gnbsim.yaml
+  register: gnbsim_info
+  become: yes
+
+- name: Display status of the gNB simulator
+  ansible.builtin.debug:
+    msg: "Service {{ item.service }} is currently {{ item.state }}"
+  loop: "{{ gnbsim_info.containers }}"
+  when: item.service == 'gnbsim'
+

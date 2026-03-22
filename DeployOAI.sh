@@ -85,7 +85,7 @@ git checkout -f v2.2.0
 #prereq - store logs in a file::
 mkdir -p /tmp/oai/mini-gnbsim
 chmod 777 /tmp/oai/mini-gnbsim
-#2 Deploy containers (Not needed)
+#2 Deploy containers (Not needed):
 #https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/ci-scripts/yaml_files/5g_rfsimulator
     #docker-compose up -d mysql oai-amf oai-smf oai-upf oai-ext-dn
     #docker-compose -f docker-compose-mini-nonrf.yaml up -d mysql oai-amf oai-smf oai-upf oai-ext-dn
@@ -96,7 +96,7 @@ chmod 777 /tmp/oai/mini-gnbsim
 #docker exec -it rfsim5g-oai-nr-ue /bin/bash #Making sure the OAI UE is connected
 #Here should I check traffic UE to GNODEB? pls refer to 3 and 5 in the link latest up
 
-#BackAtYa : https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/DEPLOY_SA5G_MINI_WITH_GNBSIM.md
+#Back At : https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/DEPLOY_SA5G_MINI_WITH_GNBSIM.md
 #5.Deploying OAI 5G Core Network
 cd docker-compose
 python3 ./core-network.py --type start-mini --scenario 2
@@ -119,6 +119,7 @@ docker exec oai-ext-dn ping -c 3 12.1.1.2 #Ping the UE from the external DN to v
 docker exec gnbsim ping -c 3 -I 12.1.1.2 google.com #Ping an external address from the UE to verify internet connectivity. You should see successful ping responses if everything is set up correctly.
 #7.3 Iperf test
 docker exec -it oai-ext-dn iperf3 -s #Start iperf3 server on the external DN
+docker exec -it oai-ext-dn iperf3 -s -D #Or other option to start iperf3 server in daemon mode on the external DN
 docker exec -it gnbsim iperf3 -c 192.168.70.135 -B 12.1.1.2 #Start iperf3 client on the UE, connecting to the external DN server. You should see successful iperf3 test results if everything is set up correctly.
 
 #8.Analysing the Scenario Results
