@@ -118,7 +118,7 @@ docker logs gnbsim 2>&1 | grep "UE address:"    #You can see also if the UE got 
 docker exec oai-ext-dn ping -c 3 12.1.1.2 #Ping the UE from the external DN to verify connectivity. You should see successful ping responses if everything is set up correctly.
 docker exec gnbsim ping -c 3 -I 12.1.1.2 google.com #Ping an external address from the UE to verify internet connectivity. You should see successful ping responses if everything is set up correctly.
 #7.3 Iperf test
-docker exec -it oai-ext-dn iperf3 -s #Start iperf3 server on the external DN
+#docker exec -it oai-ext-dn iperf3 -s #Start iperf3 server on the external DN
 docker exec -it oai-ext-dn iperf3 -s -D #Or other option to start iperf3 server in daemon mode on the external DN
 docker exec -it gnbsim iperf3 -c 192.168.70.135 -B 12.1.1.2 #Start iperf3 client on the UE, connecting to the external DN server. You should see successful iperf3 test results if everything is set up correctly.
 
