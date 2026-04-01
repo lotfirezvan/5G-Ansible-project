@@ -254,3 +254,63 @@
 #   loop: "{{ gnbsim_info.containers }}"
 #   when: item.service == 'gnbsim'
 
+
+#           test part
+  - name: Ping the UE from the External Data Network
+    community.docker.docker_container_exec:
+      container: oai-ext-dn
+      command: ping -c 3 12.1.1.2
+    register: ping_result
+    become: no  # Your user usually has docker group permissions
+  - name: Show the ping results
+    ansible.builtin.debug:
+      msg: "{{ ping_result.stdout_lines }}"
+
+
+  - name: Test 5G Internet Connectivity from UE
+    community.docker.docker_container_exec:
+      container: gnbsim
+      command: ping -c 3 -I 12.1.1.2 google.com
+    register: ue_ping_result
+    ignore_errors: yes
+  - name: Print Ping Output to Console
+    ansible.builtin.debug:
+      var: ue_ping_result.stdout_lines
+
+  - name: Start iperf3 Server in OAI-EXT-DN (Daemon Mode)
+    community.docker.docker_container_exec:
+      container: oai-ext-dn
+      command: iperf3 -s -D
+    register: iperf_server_result
+  - name: Confirm iperf3 Server is Listening
+    ansible.builtin.debug:
+      msg: "iperf3 server is running in the background on oai-ext-dn"
+    when: iperf_server_result.rc == 0
+
+  - name: Run 5G Uplink Throughput Test (UE to EXT-DN)
+    community.docker.docker_container_exec:
+      container: gnbsim
+      command: iperf3 -c 192.168.70.135 -B 12.1.1.2 
+    register: iperf_client_result
+    ignore_errors: yes
+  - name: Print 5G Throughput Results
+    ansible.builtin.debug:
+      var: iperf_client_result.stdout_lines
+
+
+  #       `Undeploy containers when done` task is moved to the end of the playbook to ensure all tests are executed before cleanup.
+  - name: Forcefully stop and remove gnbsim containers
+    community.docker.docker_compose_v2:
+      project_src: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
+      files:
+        - docker-compose-gnbsim.yaml
+      state: absent
+      remove_orphans: yes
+      timeout: 0
+    become: no
+
+  - name: Stop the OAI 5G Core (Mini Scenario 2)
+    ansible.builtin.command:
+      cmd: "python3 ./core-network.py --type stop-mini --scenario 2"
+      chdir: "{{ ansible_facts['env']['HOME'] }}/oai-cn5g-fed/docker-compose"
+    become: no

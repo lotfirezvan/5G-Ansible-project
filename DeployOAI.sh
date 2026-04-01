@@ -131,7 +131,7 @@ docker logs gnbsim > /tmp/oai/mini-gnbsim/gnbsim.log 2>&1
 
 
         #Undeploy containers when done
-#docker-compose down   
-#docker-compose -f docker-compose-gnbsim.yaml down -t 0
-#python3 ./core-network.py --type stop-mini --scenario 2
+docker-compose down   
+docker-compose -f docker-compose-gnbsim.yaml down -t 0
+python3 ./core-network.py --type stop-mini --scenario 2
 

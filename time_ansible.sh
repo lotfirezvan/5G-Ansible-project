@@ -4,7 +4,7 @@ PLAYBOOK="DeployOAI.yaml"
 
 START=$(date +%s%3N)
 
-ansible-playbook -i "localhost," -c local "$PLAYBOOK" --become
+ansible-playbook -i "localhost," -c local "$PLAYBOOK"
 
 END=$(date +%s%3N)
 
