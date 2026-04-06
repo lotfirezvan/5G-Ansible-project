@@ -57,6 +57,12 @@ RAN Components :
 6. Launches gNB simulator
 7. Executes connectivity and throughput tests
 
+## 📝 Notes
+ • All operations requiring elevated privileges are marked with become: yes in the YAML file
+ • The Ansible deployment is designed for local execution but can be adapted for remote hosts
+ • Complete logs are saved for troubleshooting and analysis
+ • The scenario uses OAI's "mini" configuration (Scenario 2) with gnbsim for simplicity
+
 ## 📄 License
 This project is provided as-is. Please ensure compliance with OAI licensing requirements.
 
