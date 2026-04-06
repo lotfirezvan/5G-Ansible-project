@@ -3,8 +3,7 @@
 # chmod +x your_script.sh
 # ./your_script.sh
 
-                #Prerequisite Setup
-#https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/DEPLOY_PRE_REQUISITES.md      
+                #Prerequisite Setup    
 
     #Install Docker
 sudo apt update
@@ -81,22 +80,10 @@ git checkout -f v2.2.0
 ./scripts/syncComponents.sh
 
                 #DEPLOY_SA5G_MINI_WITH_GNBSIM
-#https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/DEPLOY_SA5G_MINI_WITH_GNBSIM.md
 #prereq - store logs in a file::
 mkdir -p /tmp/oai/mini-gnbsim
 chmod 777 /tmp/oai/mini-gnbsim
-#2 Deploy containers (Not needed):
-#https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/ci-scripts/yaml_files/5g_rfsimulator
-    #docker-compose up -d mysql oai-amf oai-smf oai-upf oai-ext-dn
-    #docker-compose -f docker-compose-mini-nonrf.yaml up -d mysql oai-amf oai-smf oai-upf oai-ext-dn
-#docker-compose ps -a
-    #docker-compose up -d oai-gnb
-#docker logs rfsim5g-oai-amf #You can verify that the gNB is connected with the AMF
-    #docker-compose up -d oai-nr-ue
-#docker exec -it rfsim5g-oai-nr-ue /bin/bash #Making sure the OAI UE is connected
-#Here should I check traffic UE to GNODEB? pls refer to 3 and 5 in the link latest up
 
-#Back At : https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/DEPLOY_SA5G_MINI_WITH_GNBSIM.md
 #5.Deploying OAI 5G Core Network
 cd docker-compose
 python3 ./core-network.py --type start-mini --scenario 2
