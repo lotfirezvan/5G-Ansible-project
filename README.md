@@ -57,6 +57,9 @@ RAN Components :
 6. Launches gNB simulator
 7. Executes connectivity and throughput tests
 
+## 📄 License
+This project is provided as-is. Please ensure compliance with OAI licensing requirements.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
