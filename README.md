@@ -1,4 +1,4 @@
-# 5G core Ansible deployment  
+# 5G Core Ansible deployment  
 
 This graduate course project was implemented with the goal to deploy a 5G core on low resources general purpose computer. 
 Another major goal of this project was to evaluate the improvement that can be achieved by automating the deployment using tools like Ansible versus regular shell commands. 
@@ -13,9 +13,10 @@ This repository automates the deployment of an OpenAirInterface 5G Core Network 
 - **Docker** installation and configuration
 - **Ansible** 
 - **Python 3.9.18** setup via pyenv
-- **OAI 5G Core Components**: AMF, NRF, UPF, SMF
+- **OAI 5G Core Components : v2.2.0**: AMF, NRF, UPF, SMF
 - **5G RAN Components**: gNB (Base Station), NR-UE (User Equipment)
 - **Testing Tools**: iperf3 for throughput measurements, ping for connectivity tests
+- **MySQL**: 8.0
 
 ## 📁 Project Structure
 • **installAnsible.sh**  : Initial script to run in order to install Ansible on the current machine
@@ -28,6 +29,34 @@ This repository automates the deployment of an OpenAirInterface 5G Core Network 
 
 • **time_manual.sh** : Script to run and time the DeployOAI.yaml playbook
 
+## 📊 What Gets Deployed
+5G Core Network Services :
+
+• AMF (Access and Mobility Management Function)
+
+• NRF (Network Repository Function)
+
+• UPF (User Plane Function)
+
+• SMF (Session Management Function)
+
+• External Data Network (EXT-DN) for simulations and generating traffic
+
+RAN Components :
+
+• gnbsim : A simulator of a gNB and an UE
+
+
+## 📚 Deployment High Level Steps 
+
+1. Installs Docker Engine and Compose
+2. Sets up Python 3.9.18 via pyenv
+3. Pulls OAI container images
+4. Configures networking (IPv4 forwarding, iptables)
+5. Deploys 5G Core Network (mini scenario)
+6. Launches gNB simulator
+7. Executes connectivity and throughput tests
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -39,8 +68,12 @@ This repository automates the deployment of an OpenAirInterface 5G Core Network 
 ### Installation
 
 1. **Clone the repo** :
+```bash
+git clone https://github.com/lotfirezvan/5G-Ansible-project.git
+```
 2. **Install Ansible** (if not already installed):
 ```bash
+chmod +x installAnsible.sh
 ./installAnsible.sh
 ```
 3.  **Run and Time Manual Deployment** :
