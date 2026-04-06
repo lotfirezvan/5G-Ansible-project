@@ -8,7 +8,7 @@
     #Install Docker
 sudo apt update
 sudo apt upgrade -y
-sudo apt install -y ca-certificates curl
+sudo apt install -y --reinstall ca-certificates curl
 
 #Add Docker’s official GPG key
 sudo install -m 0755 -d /etc/apt/keyrings
@@ -26,7 +26,7 @@ EOF
 
 #Install the Docker packages
 sudo apt update
-sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt install --reinstall docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Docker Running
 #sudo systemctl status docker
@@ -44,9 +44,9 @@ echo "Please restart your computer to apply the group changes for Docker. After 
 
     #Install Python 3.6.9
 #sudo apt update
-sudo apt install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+sudo apt install -y --reinstall make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 curl https://pyenv.run | bash
-pyenv install 3.6.9
+pyenv install -f 3.6.9
 pyenv global 3.6.9
 python3 --version
 
