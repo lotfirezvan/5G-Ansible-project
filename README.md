@@ -18,6 +18,8 @@ This repository automates the deployment of an OpenAirInterface 5G Core Network 
 - **Testing Tools**: iperf3 for throughput measurements, ping for connectivity tests
 - **MySQL**: 8.0
 
+## ⚠️ WARNING : This code is meant to be ran in a VM
+
 ## 📁 Project Structure
 • **installAnsible.sh**  : Initial script to run in order to install Ansible on the current machine
 
