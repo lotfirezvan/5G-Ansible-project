@@ -7,7 +7,6 @@
   # Defines the target server(s) from inventory.ini file.
 
   tasks:
-    # Tasks are the specific actions Ansible will perform on the VM.
     - name: Check RAM Availability
       # Extracts the 'Available' memory column from the Linux 'free' command.
       shell: "free -m | grep Mem | awk '{print $4}'"
@@ -18,7 +17,7 @@
     - name: Check CPU Cores
       # Queries the OS for the number of available processing units.
       shell: "nproc"
-      # 'nproc' is a standard Linux utility that prints the number of CPU cores.
+      # 'nproc' prints the number of CPU cores.
       register: cpu_cores
       # Stores the CPU count into a variable.
 
