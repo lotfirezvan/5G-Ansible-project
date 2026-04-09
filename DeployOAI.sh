@@ -1,5 +1,5 @@
 # OAI 5G Deployment Script
-# This script installs Decker and deploys OAI 5G Core with gnbsim
+# This script installs Docker and deploys OAI 5G Core with gnbsim
 #!/bin/bash
 
                 #Prerequisite Setup    
@@ -55,7 +55,7 @@ echo "Login to Docker Hub to pull base images. If you do not have an account, pl
 # optional: docker login if needed
 sudo docker pull ubuntu:jammy
 sudo docker pull mysql:8.0
-sudo docker images #To verify that the images have been pulled successfully, you can run the command above to list all Docker images on your system. You should see "ubuntu:jammy" and "mysql:8.0" in the list.
+#sudo docker images #To verify that the images have been pulled successfully, you can run the command above to list all Docker images on your system. You should see "ubuntu:jammy" and "mysql:8.0" in the list.
 
     #Network Configuration
 sudo sysctl net.ipv4.conf.all.forwarding=1
@@ -100,10 +100,6 @@ docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim
 #docker ps -a #make sure all services status are healthy
 #docker logs gnbsim 2>&1 | grep "UE address:"    #You can see also if the UE got allocated an IP address.
 
-
-#7.2  Ping test
-docker exec oai-ext-dn ping -c 3 12.1.1.2 #Ping the UE from the external DN to verify connectivity. You should see successful ping responses if everything is set up correctly.
-docker exec gnbsim ping -c 3 -I 12.1.1.2 google.com #Ping an external address from the UE to verify internet connectivity. You should see successful ping responses if everything is set up correctly.
 #7.3 Iperf test
 #docker exec -it oai-ext-dn iperf3 -s #Start iperf3 server on the external DN
 docker exec -it oai-ext-dn iperf3 -s -D #Or other option to start iperf3 server in daemon mode on the external DN
