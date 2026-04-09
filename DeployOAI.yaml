@@ -1,3 +1,4 @@
+
 # ansible-playbook -i "localhost," -c local your_playbook.yml
 
 - name: Deploy OAI
@@ -241,7 +242,15 @@
       wait: yes
     become: yes
 
-#           test part
+  - name: Start iperf3 Server in OAI-EXT-DN (Daemon Mode)
+    community.docker.docker_container_exec:
+      container: oai-ext-dn
+      command: iperf3 -s -D
+    register: iperf_server_result
+  - name: Confirm iperf3 Server is Listening
+    ansible.builtin.debug:
+      msg: "iperf3 server is running in the background on oai-ext-dn"
+    when: iperf_server_result.rc == 0
 
   - name: Run 5G Uplink Throughput Test (UE to EXT-DN)
     community.docker.docker_container_exec:
