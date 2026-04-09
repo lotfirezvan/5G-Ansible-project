@@ -1,6 +1,6 @@
+#!/bin/bash
 # OAI 5G Deployment Script
 # This script installs Docker and deploys OAI 5G Core with gnbsim
-#!/bin/bash
 
                 #Prerequisite Setup    
 
