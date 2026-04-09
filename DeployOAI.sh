@@ -32,14 +32,8 @@ sudo apt install --reinstall docker-ce docker-ce-cli containerd.io docker-buildx
 sudo systemctl enable docker
 sudo systemctl start docker
 
-
-#Test the Docker installation
-#sudo docker run hello-world
-
 #Add your user to the docker group to run docker without sudo
 sudo usermod -aG docker $USER
-#Restart Linux to apply the group changes (or you can log out and log back in, but a restart is often simpler)
-#echo "Please restart your computer to apply the group changes for Docker. After restarting, you can run Docker commands without using 'sudo'."
 
     #Install Python 3.6.9
 #sudo apt update
