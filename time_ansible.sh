@@ -1,4 +1,7 @@
 #!/bin/bash
+# Measure execution time of Ansible deployment
+
+set -e
 
 PLAYBOOK="DeployOAI.yaml"
 
