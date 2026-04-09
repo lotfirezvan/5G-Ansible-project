@@ -1,4 +1,5 @@
 #!/bin/bash
+# Measure execution time of manual OAI deployment
 
 SCRIPT="./DeployOAI.sh"
 
