@@ -240,20 +240,6 @@
       state: present
       wait: yes
     become: yes
-#Display if gnbsim is healthy
-#  - name: Gather facts about gnbsim services
-#   community.docker.docker_compose_v2_info:
-#     project_src: "{{ ansible_env.HOME }}/oai-cn5g-fed/docker-compose"
-#     files:
-#       - docker-compose-gnbsim.yaml
-#   register: gnbsim_info
-#   become: yes
-# - name: Display status of the gNB simulator
-#  ansible.builtin.debug:
-#     msg: "Service {{ item.service }} is currently {{ item.state }}"
-#   loop: "{{ gnbsim_info.containers }}"
-#   when: item.service == 'gnbsim'
-
 
 #           test part
 
