@@ -1,7 +1,6 @@
+# OAI 5G Deployment Script
+# This script installs Decker and deploys OAI 5G Core with gnbsim
 #!/bin/bash
-# To run this script, use: 
-# chmod +x your_script.sh
-# ./your_script.sh
 
                 #Prerequisite Setup    
 
@@ -30,7 +29,7 @@ sudo apt install --reinstall docker-ce docker-ce-cli containerd.io docker-buildx
 
 # Docker Running
 #sudo systemctl status docker
-sudo systemctl stop docker
+sudo systemctl enable docker
 sudo systemctl start docker
 
 
@@ -38,9 +37,9 @@ sudo systemctl start docker
 #sudo docker run hello-world
 
 #Add your user to the docker group to run docker without sudo
-sudo usermod -a -G docker atakt073@uottawa.ca
+sudo usermod -aG docker $USER
 #Restart Linux to apply the group changes (or you can log out and log back in, but a restart is often simpler)
-echo "Please restart your computer to apply the group changes for Docker. After restarting, you can run Docker commands without using 'sudo'."
+#echo "Please restart your computer to apply the group changes for Docker. After restarting, you can run Docker commands without using 'sudo'."
 
     #Install Python 3.6.9
 #sudo apt update
@@ -52,7 +51,8 @@ python3 --version
 
     #Pull base images
 echo "Login to Docker Hub to pull base images. If you do not have an account, please create one at https://hub.docker.com/ and then login using the command below. If you do not want to login, please comment out the next line and ensure you have pulled the necessary base images (ubuntu:jammy and mysql:8.0) before proceeding with the rest of the script."
-docker login -u atom230 #To access more pulling limits, please login (otherwise comment out this line)
+#docker login -u atom230 #To access more pulling limits, please login (otherwise comment out this line)
+# optional: docker login if needed
 sudo docker pull ubuntu:jammy
 sudo docker pull mysql:8.0
 sudo docker images #To verify that the images have been pulled successfully, you can run the command above to list all Docker images on your system. You should see "ubuntu:jammy" and "mysql:8.0" in the list.
@@ -96,9 +96,9 @@ docker image tag rohankharade/gnbsim:latest gnbsim:latest
 
 #7. Executing the gnbsim Scenario
 docker-compose -f docker-compose-gnbsim.yaml up -d gnbsim
-docker-compose -f docker-compose-gnbsim.yaml ps -a #Wait a bit for all gnbsim container to be healthy.
-docker ps -a #make sure all services status are healthy
-docker logs gnbsim 2>&1 | grep "UE address:"    #You can see also if the UE got allocated an IP address.
+#docker-compose -f docker-compose-gnbsim.yaml ps -a #Wait a bit for all gnbsim container to be healthy.
+#docker ps -a #make sure all services status are healthy
+#docker logs gnbsim 2>&1 | grep "UE address:"    #You can see also if the UE got allocated an IP address.
 
 
 #7.2  Ping test
@@ -121,4 +121,3 @@ docker logs gnbsim > /tmp/oai/mini-gnbsim/gnbsim.log 2>&1
 docker-compose down   
 docker-compose -f docker-compose-gnbsim.yaml down -t 0
 python3 ./core-network.py --type stop-mini --scenario 2
-
