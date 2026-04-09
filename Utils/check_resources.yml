@@ -1,1 +1,33 @@
 
+---
+# The '---' signals the start of a YAML document.
+- name: Resource Check
+  # This provides a descriptive name for the Play (the collection of tasks).
+  hosts: my_5g_nodes
+  # Defines the target server(s) from inventory.ini file.
+
+  tasks:
+    # Tasks are the specific actions Ansible will perform on the VM.
+    - name: Check RAM Availability
+      # Extracts the 'Available' memory column from the Linux 'free' command.
+      shell: "free -m | grep Mem | awk '{print $4}'"
+      # Runs a shell command: 'free -m' shows RAM in MB, 'awk' picks the 4th value.
+      register: ram_available
+      # Captures the output of the command and stores it in a variable for later use.
+
+    - name: Check CPU Cores
+      # Queries the OS for the number of available processing units.
+      shell: "nproc"
+      # 'nproc' is a standard Linux utility that prints the number of CPU cores.
+      register: cpu_cores
+      # Stores the CPU count into a variable.
+
+    - name: Display Status
+      # Prints the gathered data back to the user on the Mac terminal.
+      debug:
+        # The 'debug' module is used for printing variables and messages during execution.
+        msg: 
+          - "Available RAM: {{ ram_available.stdout }} MB"
+          - "CPU Cores: {{ cpu_cores.stdout }}"
+          - "Note: OAI 5G Core typically needs at least 4GB RAM and 2 Cores."
+      # This formats a list of strings to show the final results of our check.
